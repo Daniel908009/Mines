@@ -75,10 +75,35 @@ def click(i, j):
     else:
         reveal(i, j)
 
-# function that reveals the empty spaces and numbers around the clicked button
+# function that reveals the empty spaces and numbers around the clicked button and around the empty bordering buttons and so on
 def reveal(i, j):
-    pass
+    # revealing the clicked button
+    buttons[i][j].config(bg="white")
+    tiles_to_check = []
+    tiles_to_check.append((i, j+1))
+    tiles_to_check.append((i, j-1))
+    tiles_to_check.append((i+1, j))
+    tiles_to_check.append((i-1, j))
 
+    # revealing the empty spaces and numbers around the clicked button, if there are any empty spaces around the clicked button the function will check them as well
+    while len(tiles_to_check) > 0:
+        i, j = tiles_to_check[0][0], tiles_to_check[0][1]
+        print(i, j)
+        if (i, j) in empty_spaces_coordinates:
+            buttons[i][j].config(bg="white")
+            empty_spaces_coordinates.remove((i, j))
+            print("Empty space")
+            tiles_to_check.append((i, j+1))
+            tiles_to_check.append((i, j-1))
+            tiles_to_check.append((i+1, j))
+            tiles_to_check.append((i-1, j))
+        elif (i, j) in numbers_coordinates:
+            buttons[i][j].config(bg="white")
+            numbers_coordinates.remove((i, j))
+            print("Number")
+        else:
+            print("Mine or out of bounds")
+        tiles_to_check.pop(0)
 # function that fills the game board with mines based on the number of mines
 def fill_mines():
     global mine_coordinates
@@ -108,15 +133,21 @@ def numbers_around_mines():
                             mines += 1
                 if mines > 0:
                     buttons[i][j].config(text=str(mines))
-                    numbers_coordinates.append([(i, j),mines])
-    print(numbers_coordinates)
+                    #numbers_coordinates.append([(i, j),mines])
+                    numbers_coordinates.append((i, j))
+    #print(numbers_coordinates)
 
 # function that filles a list of empty spaces
 def empty_spaces():
     for i in range(num_of_rows):
         for j in range(num_of_columns):
-            if (i, j) not in mine_coordinates and (i,j) not in numbers_coordinates:
-                empty_spaces_coordinates.append((i, j))
+            empty_spaces_coordinates.append((i, j))
+    # removing all the tiles that are in other lists
+    for x, y in mine_coordinates:
+        empty_spaces_coordinates.remove((x, y))
+    for (x, y) in numbers_coordinates:
+        empty_spaces_coordinates.remove((x, y))
+    print(len(empty_spaces_coordinates))
 
 # function to create the buttons for the game board
 def create_board():
@@ -130,7 +161,7 @@ def create_board():
         buttons.append(row)
 
 # variables for the game
-num_of_mines = 15
+num_of_mines = 40
 num_of_rows = 10
 num_of_columns = 10
 buttons = []
