@@ -98,8 +98,11 @@ def reveal(i, j):
             tiles_to_check.append((i+1, j))
             tiles_to_check.append((i-1, j))
         elif (i, j) in numbers_coordinates:
-            buttons[i][j].config(bg="white")
+            temp = numbers_coordinates[numbers_coordinates.index((i, j))]
+            temp2 = numbers_values_coordinates[temp]
+            buttons[i][j].config(text=str(temp2), bg="white")
             numbers_coordinates.remove((i, j))
+            temp.clear()
             print("Number")
         else:
             print("Mine or out of bounds")
@@ -116,13 +119,12 @@ def fill_mines():
             i -= 1
         elif (x, y) not in mine_coordinates:
             mine_coordinates.append((x, y))
-            buttons[x][y].config(text="X")
         else:
             i -= 1
 
 # function that calculates the number of mines around each button and displays the number on the button
 def numbers_around_mines():
-    global numbers_coordinates
+    global numbers_coordinates, numbers_values_coordinates
     for i in range(num_of_rows):
         for j in range(num_of_columns):
             if (i, j) not in mine_coordinates:
@@ -132,8 +134,9 @@ def numbers_around_mines():
                         if x >= 0 and x < num_of_rows and y >= 0 and y < num_of_columns and (x, y) in mine_coordinates:
                             mines += 1
                 if mines > 0:
-                    buttons[i][j].config(text=str(mines))
-                    #numbers_coordinates.append([(i, j),mines])
+                    #buttons[i][j].config(text=str(mines))
+                    #numbers_values_coordinates.append((i, j))
+                    numbers_values_coordinates.append(mines)
                     numbers_coordinates.append((i, j))
     #print(numbers_coordinates)
 
@@ -161,12 +164,13 @@ def create_board():
         buttons.append(row)
 
 # variables for the game
-num_of_mines = 40
+num_of_mines = 10
 num_of_rows = 10
 num_of_columns = 10
 buttons = []
 mine_coordinates = []
 numbers_coordinates = []
+numbers_values_coordinates = []
 empty_spaces_coordinates = []
 
 # creating the main window
