@@ -3,8 +3,23 @@ import tkinter
 import random
 
 # function that saves the settings
-def save_settings(mines, rows, columns):
-    pass
+def save_settings(mines, rows, columns, resizable):
+    global num_of_mines, num_of_rows, num_of_columns
+    if int(mines) < 10 or int(rows) < 10 or int(columns) < 10 or int(mines) > 50 or int(rows) > 30 or int(columns) > 30 or int(mines)/2 > int(rows) * int(columns):
+        info_label.config(text="Wrong input!")
+    else:
+        # setting the new values
+        num_of_mines = int(mines)
+        num_of_rows = int(rows)
+        num_of_columns = int(columns)
+        if resizable:
+            window.resizable(True, True)
+        else:
+            window.resizable(False, False)
+        # resetting the text of the information label
+        info_label.config(text="Information label")
+        # restarting the game to apply the new settings
+        restart()
 
 # function that opens a settings window
 def settings():
@@ -52,12 +67,41 @@ def settings():
     resizable_check = tkinter.Checkbutton(settings_frame, bg="black", variable=resizable_var)
     resizable_check.grid(row=3, column=1,)
     # creating a save button
-    save_button = tkinter.Button(settings_frame, text="Save", font=("Helvetica", 12), bg="black", fg="white", command=lambda: save_settings(mines_entry.get(), rows_entry.get(), columns_entry.get()))
+    save_button = tkinter.Button(settings_frame, text="Save", font=("Helvetica", 12), bg="black", fg="white", command=lambda: save_settings(mines_entry.get(), rows_entry.get(), columns_entry.get(), resizable_var.get()))
     save_button.grid(row=4, column=0, columnspan=2)
+
+# function that is called to start a new game
+def new_game():
+    create_board()
+    fill_mines()
+    numbers_around_mines()
+    empty_spaces()
 
 # function that restarts the game
 def restart():
-    pass
+    # resetting all the variables and lists
+    global mine_coordinates, numbers_coordinates, numbers_values_coordinates, empty_spaces_coordinates, buttons_size
+    mine_coordinates = []
+    numbers_coordinates = []
+    numbers_values_coordinates = []
+    empty_spaces_coordinates = []
+    # destroying all the buttons on the game board, so that new buttons can be created
+    for widget in game_frame.winfo_children():
+        widget.destroy()
+    buttons.clear()
+    # resizing the widgets in the window and resetting them to their defaults
+    # getting the new sizes for the widgets
+    title_size = window.winfo_height() // 20
+    info_label_size = window.winfo_height() // 30
+    settings_restart_size = window.winfo_height() // 40
+    buttons_size = window.winfo_height() // num_of_rows // 12
+    # resizing the widgets and setting default text
+    title_label.config(font=("Helvetica", title_size), text="Minesweeper")
+    info_label.config(font=("Helvetica", info_label_size), text="Information label")
+    restart_button.config(font=("Helvetica", settings_restart_size))
+    settings_button.config(font=("Helvetica", settings_restart_size))
+    # starting a new game
+    new_game()
 
 # function that handles the click event on the buttons
 def click(i, j):
@@ -74,6 +118,23 @@ def click(i, j):
                 button.config(state="disabled")
     else:
         reveal(i, j)
+
+# function that checks if the player has won the game
+def check_win():
+    # checking if there are any buttons left that are not mines and are not clicked
+    for i in range(num_of_rows):
+        for j in range(num_of_columns):
+            if buttons[i][j]["bg"] == "gray" and buttons[i][j] not in mine_coordinates:
+                return False
+    title_label.config(text="You Win!")
+    # showing player the position of the mines
+    for x, y in mine_coordinates:
+        buttons[x][y].config(text="X", bg="red")
+    # disabling the buttons after the player has won
+    for row in buttons:
+        for button in row:
+            button.config(state="disabled")
+    return True
 
 # function that reveals the empty spaces and numbers around the clicked button and around the empty bordering buttons and so on
 def reveal(i, j):
@@ -98,15 +159,14 @@ def reveal(i, j):
             tiles_to_check.append((i+1, j))
             tiles_to_check.append((i-1, j))
         elif (i, j) in numbers_coordinates:
-            temp = numbers_coordinates[numbers_coordinates.index((i, j))]
-            temp2 = numbers_values_coordinates[temp]
-            buttons[i][j].config(text=str(temp2), bg="white")
-            numbers_coordinates.remove((i, j))
-            temp.clear()
+            buttons[i][j].config(bg="white")
+            buttons[i][j].config(text=str(numbers_values_coordinates[i][j]))
             print("Number")
         else:
             print("Mine or out of bounds")
         tiles_to_check.pop(0)
+        check_win()
+
 # function that fills the game board with mines based on the number of mines
 def fill_mines():
     global mine_coordinates
@@ -126,6 +186,7 @@ def fill_mines():
 def numbers_around_mines():
     global numbers_coordinates, numbers_values_coordinates
     for i in range(num_of_rows):
+        numbers_values_coordinates.append([])
         for j in range(num_of_columns):
             if (i, j) not in mine_coordinates:
                 mines = 0
@@ -136,9 +197,15 @@ def numbers_around_mines():
                 if mines > 0:
                     #buttons[i][j].config(text=str(mines))
                     #numbers_values_coordinates.append((i, j))
-                    numbers_values_coordinates.append(mines)
+                    numbers_values_coordinates[i].append(mines)
                     numbers_coordinates.append((i, j))
+                else:
+                    numbers_values_coordinates[i].append(0)
+            else:
+                numbers_values_coordinates[i].append(0)
     #print(numbers_coordinates)
+    #print(len(numbers_values_coordinates))
+    #print(numbers_values_coordinates)
 
 # function that filles a list of empty spaces
 def empty_spaces():
@@ -150,7 +217,7 @@ def empty_spaces():
         empty_spaces_coordinates.remove((x, y))
     for (x, y) in numbers_coordinates:
         empty_spaces_coordinates.remove((x, y))
-    print(len(empty_spaces_coordinates))
+    #print(len(empty_spaces_coordinates))
 
 # function to create the buttons for the game board
 def create_board():
@@ -158,15 +225,15 @@ def create_board():
     for i in range(num_of_rows):
         row = []
         for j in range(num_of_columns):
-            button = tkinter.Button(game_frame, width=5, height=2, bg="gray", relief="raised", command=lambda i=i, j=j: click(i, j))
+            button = tkinter.Button(game_frame, width=buttons_size, height=int(buttons_size/2), bg="gray", relief="raised", command=lambda i=i, j=j: click(i, j))
             button.grid(row=i, column=j)
             row.append(button)
         buttons.append(row)
 
 # variables for the game
-num_of_mines = 10
-num_of_rows = 10
-num_of_columns = 10
+num_of_mines = 15
+num_of_rows = 15
+num_of_columns = 15
 buttons = []
 mine_coordinates = []
 numbers_coordinates = []
@@ -181,8 +248,14 @@ window.resizable(False, False)
 window.config(bg="black")
 window.iconbitmap("Mine.ico")
 
+# size variables
+title_size = window.winfo_height() // 20
+info_label_size = window.winfo_height() // 30
+settings_restart_size = window.winfo_height() // 40
+buttons_size = window.winfo_height() // num_of_rows //12
+
 # creating a label for the title of the game
-title_label = tkinter.Label(window, text="Minesweeper", font=("Helvetica", 30), bg="black", fg="white")
+title_label = tkinter.Label(window, text="Minesweeper", font=("Helvetica", title_size), bg="black", fg="white")
 title_label.pack(side="top")
 
 # creating a main frame for the game
@@ -198,21 +271,18 @@ control_frame = tkinter.Frame(main_frame, bg="black")
 control_frame.grid(row=0, column=1)
 
 # creating a label for game information
-info_label = tkinter.Label(control_frame, text="Information label", font=("Helvetica", 20), bg="black", fg="white")
+info_label = tkinter.Label(control_frame, text="Information label", font=("Helvetica", info_label_size), bg="black", fg="white")
 info_label.grid(row=1, column=0, columnspan=2)
 
 # creating a restart button
-restart_button = tkinter.Button(control_frame, text="Restart", font=("Helvetica", 15), bg="black", fg="white", command=lambda: restart())
+restart_button = tkinter.Button(control_frame, text="Restart", font=("Helvetica", settings_restart_size), bg="black", fg="white", command=lambda: restart())
 restart_button.grid(row=2, column=0)
 
 # creating a settings button
-settings_button = tkinter.Button(control_frame, text="Settings", font=("Helvetica", 15), bg="black", fg="white", command=lambda: settings())
+settings_button = tkinter.Button(control_frame, text="Settings", font=("Helvetica", settings_restart_size), bg="black", fg="white", command=lambda: settings())
 settings_button.grid(row=2, column=1)
 
-# fililng the game board with buttons and performing the necessery functions
-create_board()
-fill_mines()
-numbers_around_mines()
-empty_spaces()
+# starting a new game
+new_game()
 
 window.mainloop()
