@@ -4,7 +4,7 @@ Description of what the program can do: <br>
 program has adjustable and resizable board, it also has a scalable UI <br>
 Note: For any kind of changes in scalability, player has to hit the reset button <br>
 <h2>Explanation of mines</h2>
-Each Minesweeper game starts out with a grid of unmarked squares. After clicking one of these squares, some of the squares will disappear, some will remain <br> blank, and some will have numbers on them. It's your job to use the numbers to figure out which of the blank squares have mines and which are safe to <br> click.
+Each Minesweeper game starts out with a grid of unmarked squares. After clicking one of these squares, some of the squares will disappear, some will remain blank, and some will have numbers on them. <br> It's your job to use the numbers to figure out which of the blank squares have mines and which are safe to click.
 <h1>Download instructions</h1>
 *Note the links are instructional images <br>
 <h2>Using graphic UI</h2>
