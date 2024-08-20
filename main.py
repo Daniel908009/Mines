@@ -1,6 +1,12 @@
 # necessery imports
 import tkinter
 import random
+import os
+import sys
+if hasattr(sys, '_MEIPASS'):
+    base_path = sys._MEIPASS
+else:
+    base_path = os.path.abspath(".")
 
 # function that saves the settings
 def save_settings(mines, rows, columns, resizable):
@@ -31,7 +37,7 @@ def settings():
     settings_window.geometry("500x200")
     settings_window.resizable(False, False)
     settings_window.config(bg="black")
-    settings_window.iconbitmap("Mine.ico")
+    settings_window.iconbitmap(os.path.join(base_path, "Mine.ico"))
     # creating a label for the title of the settings window
     title_label = tkinter.Label(settings_window, text="Settings", font=("Helvetica", 20), bg="black", fg="white")
     title_label.pack(side="top")
@@ -301,7 +307,7 @@ window.title("Minesweeper")
 window.geometry("700x600")
 window.resizable(False, False)
 window.config(bg="black")
-window.iconbitmap("Mine.ico")
+window.iconbitmap(os.path.join(base_path, "Mine.ico"))
 
 # size variables
 title_size = window.winfo_height() // 20
